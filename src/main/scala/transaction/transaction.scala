@@ -1,6 +1,6 @@
 import supertagged.TaggedType
 
-package object zFormation {
+package object transaction {
 
   object zHash extends TaggedType[Array[Byte]]
   object zValue extends TaggedType[Long]

@@ -1,10 +1,10 @@
-package zFormation
+package transaction
 
-import scorex.core.transaction.proof.{Signature25519, Signature25519Serializer}
-import scorex.util.serialization.{Reader, VLQByteBufferWriter, Writer}
+import scorex.core.transaction.proof.{ Signature25519, Signature25519Serializer }
+import scorex.util.serialization.{ Reader, VLQByteBufferWriter, Writer }
+import scorex.core.serialization.Serializer
 import scorex.core.transaction.Transaction
 import scorex.util.ByteArrayBuilder
-import scorex.core.serialization.Serializer
 
 
 case class zTransaction(zInputs: IndexedSeq[zHash], zOutputs: IndexedSeq[zOutput], zSigs: IndexedSeq[Signature25519])
@@ -17,7 +17,6 @@ extends Transaction {
   }
 
 object zInputSerializer extends Serializer[zTransaction] {
- 
 
   def serializeNonSig(zObject: zTransaction, zWriter: Writer): Unit = {
     zWriter.putInt(zObject.inputs.size)
@@ -54,7 +53,6 @@ object zInputSerializer extends Serializer[zTransaction] {
     }
     zTransaction(zInput, zOutput, zSig)
   }
-
 
 }
 

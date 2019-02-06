@@ -1,11 +1,11 @@
-package zFormation
+package transaction
 
-import scorex.core.transaction.box.proposition.{PublicKey25519Proposition, PublicKey25519PropositionSerializer}
+import scorex.core.transaction.box.proposition.{ PublicKey25519Proposition, PublicKey25519PropositionSerializer }
+import scorex.util.serialization.{ Reader, Writer }
 import scorex.core.serialization.Serializer
-import scorex.util.serialization.{Reader, Writer}
 import scorex.core.transaction.box.Box
-import scorex.crypto.authds.ADKey
 import scorex.crypto.hash.Whirlpool
+import scorex.crypto.authds.ADKey
 
 case class zOutput(zProposition: PublicKey25519Proposition, zValue: zValue) extends Box[PublicKey25519Proposition] {
   override val id: ADKey = ADKey !@@ Whirlpool(zOutputSerializer.toBytes(this))

@@ -17,25 +17,16 @@ import scorex.core.transaction.wallet.Vault
 import scorex.core.transaction.box.proposition.PublicKey25519Proposition
 import scorex.core.utils.NetworkTimeProviderSettings
 import scorex.core.utils._
-import scorex.core.transaction.box.Box
 import scorex.core.utils.NetworkTimeProvider
+import transaction.zTransaction
+import block.zBlock
 
 
 class zInit(val settingsFilename: String) extends Application {
 
-  type P <: PublicKey25519Proposition
-  type PMOD <: PersistentNodeViewModifier
-  type TX <: BoxTransaction[P, B]
-  type B <: Box[P]
-  type SI <: SyncInfo
-
-  type HIS <: History[PMOD, _, _ <: History[PMOD, _, _]]
-  type MP <: MemoryPool[TX, _ <: MemoryPool[TX, _]]
-  type MS <: MinimalState[PMOD, _ <: MinimalState[_, _]]
-  type VL <: Vault[TX, PMOD, _ <: Vault[TX, PMOD, _]]
-  type SIS <: SyncInfoMessageSpec[SI]
-  type HR <: HistoryReader[PMOD, SI]
-  type MR <: MempoolReader[TX]
+  type TX <: zTransaction
+  type BLK <: zBlock
+  //* type SI <: zSync
 
   val applicationName = "scorex-experimentation"
   val applicationVersion = Version(0, 1, 0)
