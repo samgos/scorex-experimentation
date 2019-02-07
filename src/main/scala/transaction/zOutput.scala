@@ -6,7 +6,6 @@ import scorex.core.serialization.Serializer
 import scorex.core.transaction.box.Box
 import scorex.crypto.authds.ADKey
 import scorex.crypto.hash.Whirlpool
-import scorex.util.{bytesToId, idToBytes}
 
 case class zOutput(zProposition: PublicKey25519Proposition, zValue: zValue) extends Box[PublicKey25519Proposition] {
   override val id: ADKey = ADKey !@@ Whirlpool(zOutputSerializer.toBytes(this))
@@ -20,7 +19,7 @@ object zOutputSerializer extends Serializer[zOutput] {
   }
 
   override def parse(zReader: Reader): zOutput = {
-    zOutput( PublicKey25519PropositionSerializer.parseBytes(zReader.getBytes(32)), zValue @@ zReader.getULong())
+    zOutput( PublicKey25519PropositionSerializer.parseBytes(zReader.getBytes(32)).get, zValue @@ zReader.getULong())
   }
 
 }
