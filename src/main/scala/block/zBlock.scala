@@ -1,18 +1,18 @@
 package block
 
-import transaction.{ zTransaction, zInputSerializer }
-import scorex.util.serialization.{ Reader, Writer}
-import scorex.crypto.hash.{ Whirlpool, Digest32 }
-import scorex.util.{ bytesToId, idToBytes }
+import transaction.{zInputSerializer, zTransaction}
+import scorex.util.serialization.{Reader, Writer}
+import scorex.crypto.hash.{ Whirlpool}
+import scorex.util.{bytesToId, idToBytes}
 import scorex.core.serialization.Serializer
 import scorex.core.block.Block.Version
 import scorex.core.ModifierTypeId
 import scorex.core.block.Block
-import scorex.core.ModifierId
+import scorex.util.ModifierId
 
-case class zBlock(zTransactions: Seq[zTransaction], zHashParent: ModifierId, zTarget: Long, zNonce: Long, zV: Version, zTime: Long)
+case class zBlock(zTransactions: Seq[zTransaction], zHashParent: ModifierId, zTarget: Long, zNonce: Long, zVersion: Version, zTime: Long)
 extends Block[zTransaction] {
-  override val modifierTypeId: ModifierTypeId = zBlock.zBlockModifier.type
+  override val modifierTypeId: ModifierTypeId = zBlock.zBlockModifier
   val cipher = Whirlpool(zBlockSerializer.toBytes(this))
   override val id: ModifierId = bytesToId(cipher)
 }
@@ -25,12 +25,12 @@ object zBlockSerializer extends Serializer[zBlock] {
 
   override def serialize(zObject: zBlock, zWriter: Writer): Unit = {
     zWriter.putInt(zObject.transactions.size)
-    zBlock.transactions.foreach(tx => zInputSerializer.serialize(tx, zWriter))
-    zWriter.putBytes(idToBytes(zBlock.zHashParent))
-    zWriter.putLong(zBlock.zTarget)
-    zWriter.putLong(zBlock.zNonce)
-    zWriter.putLong(zBlock.zTime)
-    zWriter.put(zBlock.zV)
+    zObject.zTransactions.foreach(tx => zInputSerializer.serialize(tx, zWriter))
+    zWriter.putBytes(idToBytes(zObject.zHashParent))
+    zWriter.putLong(zObject.zTarget)
+    zWriter.putLong(zObject.zNonce)
+    zWriter.putLong(zObject.zTime)
+    zWriter.put(zObject.zVersion)
   }
 
   override def parse(zReader: Reader): zBlock = {
