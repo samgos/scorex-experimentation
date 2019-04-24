@@ -5,17 +5,16 @@ import scorex.core.network.message.SyncInfoMessageSpec
 import scorex.util.serialization.{ Reader, Writer }
 import scorex.core.serialization.Serializer
 import scorex.core.consensus.SyncInfo
-import block.zBlock
 
 case class zSync(zId: Seq[ModifierId]) extends SyncInfo {
-  override val startingPoints: ModifierId = Seq(zBlock.zBlockModifier, zId.head)
+  override val startingPoints: ModifierId = zId.head
 }
 
 object zSyncSerializer extends Serializer[zSync] {
 
   override def serialize(zObject: zSync, zWriter: Writer): Unit = {
     zWriter.putInt(zObject.zId.size)
-    zObject.zId.foreach(i => w.putBytes(idToBytes(i)))
+    zObject.zId.foreach(i => zWriter.putBytes(idToBytes(i)))
   }
 
   override def parse(zReader: Reader): zSync = {
@@ -31,4 +30,6 @@ object BDSyncInfo {
   val idzStack = 100
 }
 
-object zSyncMessageSpec extends SyncInfoMessageSpec[zSync](zSyncSerializer)
+object zSyncMessageSpec extends SyncInfoMessageSpec[zSync](zSyncSerializer.parseBytes)
+
+
