@@ -1,8 +1,10 @@
 package sync
 
-import scorex.core.transaction.state.{MinimalState}
+import scorex.core.transaction.state.MinimalState
+
 import scala.util.{Failure, Try}
 import scorex.core.VersionTag
+import core.zBlockchain
 import block.zBlock
 
 case class zState(override val version: VersionTag) extends MinimalState[zBlock, zState] {
