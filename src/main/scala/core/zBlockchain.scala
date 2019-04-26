@@ -5,7 +5,7 @@ import scorex.core.consensus.BlockChain.Score
 import scorex.core.utils.ScorexEncoding
 import scorex.core.consensus.History._
 import transaction.zTransaction
-import scorex.util.ModifierId
+import scorex.core.ModifierId
 import scorex.util.bytesToId
 import consensus.zMiner
 import block.zBlock
@@ -65,7 +65,7 @@ case class zBlockchain(zBlocks: Map[Int, zBlock], zMap: Map[String, Int], zValid
   }
 
   override def compare(zOther: zSync): HistoryComparisonResult = {
-    val theirIds = zOther.zId
+    val theirIds = zOther.startingPoints
     theirIds.reverse.find(id => contains(id)) match {
       case Some(common) =>
         val commonHeight = heightOf(common).get
@@ -98,4 +98,3 @@ object zBlockchain {
   val empty: zBlock = zBlockchain(Map(1 -> GenesisBlock), Map(GenesisBlock.encodedId -> 1), Map(GenesisBlock -> true))
 
 }
-
