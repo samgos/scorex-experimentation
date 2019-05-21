@@ -33,5 +33,5 @@ object zSync {
   val idzStack = 100
 }
 
-object zSyncMessageSpec extends SyncInfoMessageSpec[zSync](zSyncSerializer.parseBytes(_))
+object zSyncMessageSpec extends SyncInfoMessageSpec[zSync](zSyncSerializer)
 

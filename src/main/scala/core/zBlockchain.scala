@@ -65,7 +65,7 @@ case class zBlockchain(zBlocks: Map[Int, zBlock], zMap: Map[String, Int], zValid
   }
 
   override def compare(zOther: zSync): HistoryComparisonResult = {
-    val theirIds = zOther.startingPoints
+    val theirIds = zOther.zId
     theirIds.reverse.find(id => contains(id)) match {
       case Some(common) =>
         val commonHeight = heightOf(common).get
@@ -95,6 +95,6 @@ object zBlockchain {
     0: Byte,
     1517329800000L)
 
-  val empty: zBlock = zBlockchain(Map(1 -> GenesisBlock), Map(GenesisBlock.encodedId -> 1), Map(GenesisBlock -> true))
+  val empty: zBlockchain = zBlockchain(Map(1 -> GenesisBlock), Map(GenesisBlock.encodedId -> 1), Map(GenesisBlock -> true))
 
 }

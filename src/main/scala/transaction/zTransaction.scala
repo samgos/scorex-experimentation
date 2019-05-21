@@ -46,11 +46,11 @@ object zInputSerializer extends ScorexSerializer[zTransaction] {
     }
     val outputSize = zReader.getInt()
     val zOutput = (0 until outputSize) map { _ =>
-      zOutputSerializer.parseBytes(zReader.getBytes(32)).get
+      zOutputSerializer.parseBytes(zReader.getBytes(32))
     }
     val sigSize = zReader.getInt()
     val zSig = (0 until sigSize) map { _ =>
-      Signature25519Serializer.parseBytes(zReader.getBytes(32)).get
+      Signature25519Serializer.parseBytes(zReader.getBytes(32))
     }
     zTransaction(zInput, zOutput, zSig)
   }
