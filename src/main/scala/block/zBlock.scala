@@ -3,10 +3,9 @@ package block
 import transaction.{zInputSerializer, zTransaction}
 import scorex.util.serialization.{Reader, Writer}
 import scorex.crypto.hash.{ Whirlpool}
-import scorex.util.{bytesToId, idToBytes}
-import scorex.core.serialization.Serializer
+import scorex.core.serialization.ScorexSerializer
 import scorex.core.block.Block.Version
-import scorex.core.ModifierTypeId
+import scorex.core.{ModifierTypeId, bytesToId, idToBytes}
 import scorex.core.block.Block
 import scorex.util.ModifierId
 
@@ -21,7 +20,7 @@ object zBlock {
   val zBlockModifier: ModifierTypeId = ModifierTypeId @@ 10.toByte
 }
 
-object zBlockSerializer extends Serializer[zBlock] {
+object zBlockSerializer extends ScorexSerializer[zBlock] {
 
   override def serialize(zObject: zBlock, zWriter: Writer): Unit = {
     zWriter.putInt(zObject.transactions.size)

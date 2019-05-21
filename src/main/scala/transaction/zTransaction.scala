@@ -3,7 +3,7 @@ package transaction
 import block.zBlockSerializer
 import scorex.core.transaction.proof.{Signature25519, Signature25519Serializer}
 import scorex.util.serialization.{Reader, VLQByteBufferWriter, Writer}
-import scorex.core.serialization.Serializer
+import scorex.core.serialization.ScorexSerializer
 import scorex.core.transaction.Transaction
 import scorex.util.ByteArrayBuilder
 
@@ -17,7 +17,7 @@ extends Transaction {
     }
   }
 
-object zInputSerializer extends Serializer[zTransaction] {
+object zInputSerializer extends ScorexSerializer[zTransaction] {
 
   def serializeNonSig(zObject: zTransaction, zWriter: Writer): Unit = {
     zWriter.putInt(zObject.zInputs.size)

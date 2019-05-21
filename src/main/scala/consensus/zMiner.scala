@@ -1,6 +1,6 @@
 package consensus
 
-import scorex.core.network.NodeViewSynchronizer.ReceivableMessages.{ChangedMempool, SemanticallySuccessfulModifier}
+import scorex.core.network.NodeViewSynchronizer.ReceivableMessages.{ChangedHistory, ChangedMempool, SemanticallySuccessfulModifier}
 import scorex.core.NodeViewHolder.ReceivableMessages.LocallyGeneratedModifier
 import scala.concurrent.ExecutionContext.Implicits.global
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
@@ -15,8 +15,8 @@ import block.zBlock
 class zMiner(zRef: ActorRef, zTime: NetworkTimeProvider) extends Actor with ScorexLogging {
 
     override def preStart(): Unit = {
-      context.system.eventStream.subscribe(self, classOf[SemanticallySuccessfulModifier[_]])
       context.system.eventStream.subscribe(self, classOf[ChangedMempool[_]])
+      context.system.eventStream.subscribe(self, classOf[ChangedHistory[_]])
     }
 
     var currentCandidate: zBlock = constructNewBlock(zBlockchain.GenesisBlock)
@@ -60,7 +60,7 @@ class zMiner(zRef: ActorRef, zTime: NetworkTimeProvider) extends Actor with Scor
     case class MineBlock(zNonce: Long)
     val MaxTarget: Long = Long.MaxValue
 
-    private def realDifficulty(zTarget: zBlock): BigInt = MaxTarget / BigInt(1, zTarget.parentId)
+    private def realDifficulty(zTarget: zBlock): BigInt = MaxTarget / BigInt(zTarget.parentId)
 
     def correctWorkDone(zTarget: zBlock): Boolean = {
       realDifficulty(zTarget) <= zTarget.zNonce
