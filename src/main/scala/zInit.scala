@@ -1,98 +1,55 @@
-import java.net.InetSocketAddress
-import java.io.File
+import akka.actor.{ActorRef, Props}
+import api.zApi
+import block.zBlock
+import consensus.zMiner.MineBlock
+import consensus.zMinerRef
+import sync.{zRef, zSync, zSyncMessageSpec, zView}
+import scorex.core.api.http.{ApiRoute, NodeViewApiRoute, PeersApiRoute, UtilsApiRoute}
+import scorex.core.app.Application
+import scorex.core.network.PeerFeature
+import scorex.core.network.message.MessageSpec
+import scorex.core.settings.ScorexSettings
+import transaction.zTransaction
 
 import scala.concurrent.duration._
-import scorex.core.network.message.{SyncInfoMessageSpec, _}
-import akka.actor.{ActorRef, Props}
-import scorex.core.{NodeViewHolder, PersistentNodeViewModifier}
-import scorex.core.api.http._
-import scorex.core.settings._
-import scorex.core.app._
-import scorex.core.consensus.{History, HistoryReader, SyncInfo}
-import scorex.core.network.peer.PeerManagerRef
-import scorex.core.network.{NetworkControllerRef, NodeViewSynchronizer, NodeViewSynchronizerRef}
-import scorex.core.transaction.{BoxTransaction, MemoryPool, MempoolReader}
-import scorex.core.transaction.state.{MinimalState, Secret}
-import scorex.core.transaction.wallet.Vault
-import scorex.core.transaction.box.proposition.PublicKey25519Proposition
-import scorex.core.utils.NetworkTimeProviderSettings
-import scorex.core.utils._
-import scorex.core.utils.NetworkTimeProvider
-import transaction.zTransaction
-import block.zBlock
+import scala.io.Source
+import scala.language.postfixOps
 
+class zInit(configPath: String) extends {
+  override implicit val settings: ScorexSettings = ScorexSettings.read(Some(configPath))
+  override protected val features: Seq[PeerFeature] = Seq()
+} with Application {
+  override type TX = zTransaction
+  override type PMOD = zBlock
+  override type NVHT = zSync
 
-class zInit(val settingsFilename: String) extends Application {
+  override protected lazy val additionalMessageSpecs: Seq[MessageSpec[_]] = Seq(zSyncMessageSpec)
 
-  type TX <: zTransaction
-  type BLK <: zBlock
-  //* type SI <: zSync
+  override val nodeViewHolderRef: ActorRef = zRef(settings, timeProvider)
 
-  val applicationName = "scorex-experimentation"
-  val applicationVersion = Version(0, 1, 0)
-  val fileName: String = settingsFilename
-  val fileKeystore = new File(fileName + "-key")
-  val fileBody = new File(fileName)
-  val timeOption = Option(10000 seconds)
-  val timeOut = 10000 seconds
+  override val nodeViewSynchronizer: ActorRef =
+    actorSystem.actorOf(Props(new zView(networkControllerRef, nodeViewHolderRef,
+      zSyncMessageSpec, settings.network, timeProvider)))
 
-  val socketAddress = new InetSocketAddress("localhost",8080)
-  val byteArray =  Array(192, 168, 1, 1).map(_.toByte)
+  override val swaggerConfig: String = Source.fromResource("api.yaml").getLines.mkString("\n")
 
-  val networkConfig = new NetworkSettings(
-    "experiment",
-    timeOption,
-    10000,
-    true,
-    Seq(socketAddress),
-    socketAddress,
-    5,
-    timeOut,
-    false,
-    timeOption,
-    timeOption,
-    Option(socketAddress),
-    timeOut,
-    timeOut,
-    1000,
-    "0.10",
-    "experiment",
-    1000,
-    10000,
-    timeOut,
-    timeOut,
-    timeOut,
-    timeOut,
-    timeOption,
-    timeOption )
+  override val apiRoutes: Seq[ApiRoute] = Seq(
+    UtilsApiRoute(settings.restApi),
+    zApi(settings.restApi, nodeViewHolderRef),
+    PeersApiRoute(peerManagerRef, networkControllerRef, timeProvider, settings.restApi)
+  )
 
-  val timeConfig = new NetworkTimeProviderSettings("experiment", 25 seconds, 1000 seconds)
-  val walletConfig = new WalletSettings(ByteStr(byteArray), "experiment", fileKeystore)
-  val apiConfig = new RESTApiSettings(socketAddress, None, None, 10 seconds)
+  if (settings.network.nodeName.contains("mining-node")) {
+    val miner = zMinerRef(nodeViewHolderRef, timeProvider)
+    actorSystem.scheduler.scheduleOnce(5.minute) {
+      miner ! MineBlock(0)
+    }
+  }
+}
 
-  override implicit val settings: ScorexSettings = new ScorexSettings(fileBody, fileBody, networkConfig, apiConfig, walletConfig, timeConfig)
+object zInit {
 
-  override val timeProvider = new NetworkTimeProvider(settings.ntp)
-
-  override val additionalMessageSpecs: Seq[MessageSpec[_]] = Seq(ModifiersSpec, PeersSpec)
-
-  val messageHandler = new MessageHandler(additionalMessageSpecs)
-
-  override val peerManagerRef = PeerManagerRef(settings, timeProvider)
-
-  override val networkControllerRef: ActorRef = NetworkControllerRef(
-    networkConfig, messageHandler ,
-    upnp, peerManagerRef, timeProvider)
-
-  override val apiRoutes = Seq(PeersApiRoute(peerManagerRef, networkControllerRef, apiConfig), UtilsApiRoute(apiConfig))
-
-  override val nodeViewHolderRef: ActorRef = actorSystem.actorOf(Props(classOf[NodeViewHolder[TX, PMOD]], settings))
-
-  override val nodeViewSynchronizer: ActorRef = actorSystem.actorOf(Props(new NodeViewSynchronizer[TX, SI, SIS, PMOD, HR, MP]
-  (networkControllerRef, nodeViewHolderRef, this, settings.network, timeProvider)))
-
-  override val swaggerConfig: String = "experiment"
-
-    println("initialised!")
-
+  def main(args: Array[String]): Unit = {
+    new zInit(args.headOption.getOrElse("src/main/resources/node1.conf")).run()
+  }
 }

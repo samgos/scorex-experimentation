@@ -36,7 +36,7 @@ case class zMempool(zPool: Seq[zTransaction] = Seq()) extends MemoryPool[zTransa
 
 }
 
-object BDMempool {
+object zMempool {
 
   val empty: zMempool = zMempool(Seq.empty)
   val Limit = 500
