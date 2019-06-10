@@ -45,6 +45,7 @@ class zMiner(zRef: ActorRef, zTime: NetworkTimeProvider) extends Actor with Scor
       val activeMempool = currentMempool.take(1)
       val targetBlock = zParent.zTarget
       zBlock(
+        zParent.zTimestamp,
         activeMempool,
         zParent.id,
         targetBlock,

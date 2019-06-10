@@ -17,7 +17,7 @@ class zView(networkControllerRef: ActorRef,
                              syncInfoSpec: zSyncMessageSpec.type,
                              networkSettings: NetworkSettings,
                              timeProvider: NetworkTimeProvider)(implicit ex: ExecutionContext) extends
-  NodeViewSynchronizer[zBlock, zSync, zSyncMessageSpec.type, zBlock,
+  NodeViewSynchronizer[zTransaction, zSync, zSyncMessageSpec.type, zBlock,
     zBlockchain, zMempool](networkControllerRef, viewHolderRef, syncInfoSpec, networkSettings, timeProvider,
     Map(zBlock.zBlockModifier -> zBlockSerializer,  Transaction.ModifierTypeId -> zInputSerializer)
   )

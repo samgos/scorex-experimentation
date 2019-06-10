@@ -1,7 +1,10 @@
 package core
 
+import java.util.Calendar
+
 import scorex.core.consensus.{BlockChain, ModifierSemanticValidity}
 import scorex.core.consensus.BlockChain.Score
+import scorex.core.block.Block.{Timestamp, Version}
 import scorex.core.utils.ScorexEncoding
 import scorex.core.consensus.History._
 import transaction.zTransaction
@@ -88,7 +91,11 @@ case class zBlockchain(zBlocks: Map[Int, zBlock], zMap: Map[String, Int], zValid
 
 object zBlockchain {
 
-  val GenesisBlock: zBlock = zBlock(Seq.empty,
+  val startingOirgin = 1478164225796L
+
+  val GenesisBlock: zBlock = zBlock(
+    startingOirgin,
+    Seq.empty,
     bytesToId(Array.fill(32)(0: Byte)),
     zMiner.MaxTarget,
     0,

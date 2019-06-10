@@ -1,14 +1,17 @@
 package transaction
 
-import scorex.core.transaction.box.proposition.{ PublicKey25519Proposition, PublicKey25519PropositionSerializer}
+import scorex.core.transaction.box.proposition.{PublicKey25519Proposition, PublicKey25519PropositionSerializer}
 import scorex.util.serialization.{Reader, Writer}
 import scorex.core.serialization.ScorexSerializer
 import scorex.core.transaction.box.Box
+import scorex.core.transaction.box.Box.Amount
 import scorex.crypto.authds.ADKey
 import scorex.crypto.hash.Whirlpool
 
 case class zOutput(zProposition: PublicKey25519Proposition, zValue: zValue) extends Box[PublicKey25519Proposition] {
   override val id: ADKey = ADKey !@@ Whirlpool(zOutputSerializer.toBytes(this))
+  override val proposition: PublicKey25519Proposition = zProposition
+  override val value: Amount = zValue
 }
 
 object zOutputSerializer extends ScorexSerializer[zOutput] {
