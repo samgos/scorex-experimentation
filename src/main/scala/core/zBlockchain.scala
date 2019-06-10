@@ -91,10 +91,7 @@ case class zBlockchain(zBlocks: Map[Int, zBlock], zMap: Map[String, Int], zValid
 
 object zBlockchain {
 
-  val startingOirgin = 1478164225796L
-
   val GenesisBlock: zBlock = zBlock(
-    startingOirgin,
     Seq.empty,
     bytesToId(Array.fill(32)(0: Byte)),
     zMiner.MaxTarget,

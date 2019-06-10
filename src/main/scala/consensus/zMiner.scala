@@ -43,9 +43,9 @@ class zMiner(zRef: ActorRef, zTime: NetworkTimeProvider) extends Actor with Scor
 
     private def constructNewBlock(zParent: zBlock): zBlock = {
       val activeMempool = currentMempool.take(1)
+      activeMempool.foreach(tx => currentMempool.remove(tx))
       val targetBlock = zParent.zTarget
       zBlock(
-        zParent.zTimestamp,
         activeMempool,
         zParent.id,
         targetBlock,

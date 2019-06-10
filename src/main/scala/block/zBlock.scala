@@ -9,12 +9,12 @@ import scorex.core.{ModifierTypeId, bytesToId, idToBytes}
 import scorex.core.block.Block
 import scorex.util.ModifierId
 
-case class zBlock(zTimestamp: Timestamp, zTransactions: Seq[zTransaction], zHashParent: ModifierId, zTarget: Long, zNonce: Long, zVersion: Version, zTime: Long)
+case class zBlock(zTransactions: Seq[zTransaction], zHashParent: ModifierId, zTarget: Long, zNonce: Long, zVersion: Version, zTimestamp: Long)
 extends Block[zTransaction] {
   override val modifierTypeId: ModifierTypeId = zBlock.zBlockModifier
   override val transactions = zTransactions
   override val parentId = zHashParent
-  override val timestamp: Timestamp = zTimestamp
+  override val timestamp = zTimestamp
   override val version = zVersion
   val cipher = Whirlpool(zBlockSerializer.toBytes(this))
   override val id: ModifierId = bytesToId(cipher)
@@ -30,9 +30,9 @@ object zBlockSerializer extends ScorexSerializer[zBlock] {
     zWriter.putInt(zObject.transactions.size)
     zObject.zTransactions.foreach(tx => zInputSerializer.serialize(tx, zWriter))
     zWriter.putBytes(idToBytes(zObject.zHashParent))
+    zWriter.putLong(zObject.zTimestamp)
     zWriter.putLong(zObject.zTarget)
     zWriter.putLong(zObject.zNonce)
-    zWriter.putLong(zObject.zTime)
     zWriter.put(zObject.zVersion)
   }
 
@@ -42,10 +42,9 @@ object zBlockSerializer extends ScorexSerializer[zBlock] {
     val zHashParent = bytesToId(zReader.getBytes(32))
     val zTarget = zReader.getLong()
     val zNonce = zReader.getLong()
-    val zTimestamp = zReader.getByte()
+    val zTimestamp = zReader.getLong()
     val zVersion = zReader.getByte()
-    val zTime = zReader.getLong()
-    zBlock(zTimestamp, zTxs, zHashParent, zTarget, zNonce, zVersion, zTime)
+    zBlock(zTxs, zHashParent, zTarget, zNonce, zVersion, zTimestamp)
   }
 
 }
