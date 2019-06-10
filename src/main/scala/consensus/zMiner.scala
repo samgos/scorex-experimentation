@@ -23,20 +23,23 @@ class zMiner(zRef: ActorRef, zTime: NetworkTimeProvider) extends Actor with Scor
     var currentMempool: zMempool = new zMempool
 
     override def receive: Receive = {
-      case SemanticallySuccessfulModifier(mod: zBlock@unchecked) if mod.isInstanceOf[zBlock] =>
-        currentCandidate = constructNewBlock(mod)
+      case ChangedHistory(h: zBlockchain@unchecked) =>
+        context.system.scheduler.scheduleOnce(30.second) {
+          currentCandidate = constructNewBlock(h.bestBlock)
+          self ! MineBlock(currentCandidate.zNonce + 1)
+        }
+
+      case ChangedMempool(pool: zMempool) =>
+        currentMempool = pool
 
       case MineBlock(newNonce) =>
         val newBlock = currentCandidate.copy(zNonce = newNonce)
         if (zMiner.correctWorkDone(newBlock)) {
           log.info(s"New block ${newBlock.encodedId} found")
           zRef ! LocallyGeneratedModifier(newBlock)
-        }
-        context.system.scheduler.scheduleOnce(1.minute) {
+        } else {
           self ! MineBlock(newNonce + 1)
         }
-
-      case ChangedMempool(zPool: zMempool) => currentMempool = zPool
 
       case m => log.warn(s"Unexpected message $m")
     }
@@ -61,10 +64,10 @@ class zMiner(zRef: ActorRef, zTime: NetworkTimeProvider) extends Actor with Scor
     case class MineBlock(zNonce: Long)
     val MaxTarget: Long = Long.MaxValue
 
-    private def realDifficulty(zTarget: zBlock): BigInt = MaxTarget / BigInt(zTarget.parentId)
+    private def realDifficulty(zTarget: zBlock): BigInt = MaxTarget / BigInt(1, zTarget.cipher)
 
-    def correctWorkDone(zTarget: zBlock): Boolean = {
-      realDifficulty(zTarget) <= zTarget.zNonce
+    def correctWorkDone(zBlock: zBlock): Boolean = {
+      realDifficulty(zBlock) <= zBlock.zTarget
     }
 
   }
@@ -72,7 +75,7 @@ class zMiner(zRef: ActorRef, zTime: NetworkTimeProvider) extends Actor with Scor
 
   object zMinerRef {
 
-    def apply(zRef: ActorRef, zTime: NetworkTimeProvider)(implicit system: ActorSystem): ActorRef = system.actorOf(props(zRef, zTime))
     def props(zRef: ActorRef, zTime: NetworkTimeProvider): Props = Props(new zMiner(zRef: ActorRef, zTime: NetworkTimeProvider))
+    def apply(zRef: ActorRef, zTime: NetworkTimeProvider)(implicit system: ActorSystem): ActorRef = system.actorOf(props(zRef, zTime))
 
   }

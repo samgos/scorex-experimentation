@@ -16,12 +16,12 @@ case class zMempool(zPool: Seq[zTransaction] = Seq()) extends MemoryPool[zTransa
 
   override def putWithoutCheck(zTxs: Iterable[zTransaction]): zMempool = {
     val uniqueParents = zTxs.map(tx => tx.id -> tx).toMap.values
-    val newTransactions = uniqueParents.filter(x => !zPool.contains(x)).take(zPool.size)
+    val newTransactions = uniqueParents.filter(x => !zPool.contains(x)).take(zMempool.Limit - zPool.size)
     new zMempool(zPool ++ newTransactions)
   }
 
   override def remove(tx: zTransaction): zMempool = {
-    new zMempool(zPool.filter(tx => zPool != tx))
+    new zMempool(zPool.filter(x => x != tx))
   }
 
   override def filter(condition: zTransaction => Boolean): zMempool = {

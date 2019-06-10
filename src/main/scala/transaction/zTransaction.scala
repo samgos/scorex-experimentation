@@ -35,7 +35,7 @@ object zInputSerializer extends ScorexSerializer[zTransaction] {
     serializeNonSig(zObject, zWriter)
     zWriter.putInt(zObject.zSigs.size)
     zObject.zSigs.foreach{ s =>
-      Signature25519Serializer.toBytes(s)
+      Signature25519Serializer.serialize(s, zWriter)
     }
   }
 
@@ -46,11 +46,11 @@ object zInputSerializer extends ScorexSerializer[zTransaction] {
     }
     val outputSize = zReader.getInt()
     val zOutput = (0 until outputSize) map { _ =>
-      zOutputSerializer.parseBytes(zReader.getBytes(32))
+      zOutputSerializer.parse(zReader)
     }
     val sigSize = zReader.getInt()
     val zSig = (0 until sigSize) map { _ =>
-      Signature25519Serializer.parseBytes(zReader.getBytes(32))
+      Signature25519Serializer.parse(zReader)
     }
     zTransaction(zInput, zOutput, zSig)
   }
