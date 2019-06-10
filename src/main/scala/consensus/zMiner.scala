@@ -19,8 +19,8 @@ class zMiner(zRef: ActorRef, zTime: NetworkTimeProvider) extends Actor with Scor
       context.system.eventStream.subscribe(self, classOf[ChangedHistory[_]])
     }
 
-    var currentCandidate: zBlock = constructNewBlock(zBlockchain.GenesisBlock)
-    var currentMempool: zMempool = new zMempool
+  var currentMempool: zMempool = new zMempool
+  var currentCandidate: zBlock = constructNewBlock(zBlockchain.GenesisBlock)
 
     override def receive: Receive = {
       case ChangedHistory(h: zBlockchain@unchecked) =>

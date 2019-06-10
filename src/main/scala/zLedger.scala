@@ -50,6 +50,7 @@ class zLedger(configPath: String) extends {
 object zLedger {
 
   def main(args: Array[String]): Unit = {
-    new zLedger(args.headOption.getOrElse("src/main/resources/node1.conf")).run()
+    val application = new zLedger(args.headOption.getOrElse("src/main/resources/node1.conf"))
+    application.run()
   }
 }
